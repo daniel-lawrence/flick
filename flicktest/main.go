@@ -1,7 +1,7 @@
 package main
 
 import (
-	f "flick"
+	f "flick/server"
 	"net/http"
 )
 
@@ -10,9 +10,10 @@ func main() {
 	f.Serve(":5000")
 }
 
-func rootHandler(wr f.WebWriter, req *http.Request) {
+func rootHandler(req *http.Request) string {
 	d := f.NewPageData()
 	d["Name"] = "Hello world!"
 	d["Body"] = "This is a test."
-	wr.RenderTemplate("index.html", &d)
+	text := f.RenderTemplate("index.html", &d)
+	return text
 }

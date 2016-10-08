@@ -11,8 +11,11 @@ func Serve(addr string) {
 }
 
 // SetHandler takes a pattern string and a function(http.ResponseWriter,*http.Request)
-func SetHandler(pattern string, handler func(WebWriter, *http.Request)) {
-	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		handler(WebWriter{w}, r)
-	})
+func SetHandler(pattern string, handler func(req *http.Request) string) {
+
+	http.HandleFunc(pattern,
+		func(w http.ResponseWriter, r *http.Request) {
+			Write(w, handler(r))
+		})
+
 }

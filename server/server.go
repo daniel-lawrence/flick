@@ -1,6 +1,7 @@
 package flick
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -10,12 +11,14 @@ func Serve(addr string) {
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
-// SetHandler takes a pattern string and a function(http.ResponseWriter,*http.Request)
-func SetHandler(pattern string, handler func(req *http.Request) string) {
+// SetHandler takes a pattern string and a function(*http.Request)
+// and adds it to the DefaultServeMux
+func SetHandler(pattern string, handler func(w WebWriter)) {
 
 	http.HandleFunc(pattern,
 		func(w http.ResponseWriter, r *http.Request) {
-			Write(w, handler(r))
+			fmt.Printf("Page requested: %s\n", pattern)
+			handler(WebWriter{w, r})
 		})
 
 }

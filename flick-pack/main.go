@@ -22,7 +22,7 @@ func main() {
 		fmt.Println(err)
 	}
 	for _, f := range sfs {
-		s := loadResource(basePath + "/static/" + f.Name())
+		s := loadResource(basePath+"/static/"+f.Name(), true)
 		s.writeResource(out)
 	}
 
@@ -32,7 +32,7 @@ func main() {
 	}
 
 	for _, f := range tfs {
-		s := loadResource(basePath + "/templates/" + f.Name())
+		s := loadResource(basePath+"/templates/"+f.Name(), false)
 		s.writeResource(out)
 	}
 	out.Write([]byte("}\n"))

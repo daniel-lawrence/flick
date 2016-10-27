@@ -32,6 +32,7 @@ func Serve(addr string) {
 		fmt.Printf("Adding static file to list: %s\n", f.Name())
 		serveStaticFile(f.Name())
 	}
+	fmt.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 

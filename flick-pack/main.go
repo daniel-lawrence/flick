@@ -14,7 +14,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	out.Write([]byte("package main \n\nimport \"github.com/olafal0/flick\"\nvar resource map[string]*flick.TextResource\n\nfunc setMap () {\n"))
+	out.Write([]byte("package main \n\nimport \"github.com/olafal0/flick\"\nvar resource map[string]*flick.TextResource\n\nfunc initResources () {\n"))
 	out.Write([]byte("resource = make(map[string]*flick.TextResource)\n"))
 
 	sfs, err := ioutil.ReadDir(basePath + "/static/")

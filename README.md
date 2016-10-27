@@ -1,3 +1,3 @@
 # flick
 
-Extremely simple server inspired by [Flask](http://flask.pocoo.org/) and written in Go.
+Extremely simple server framework inspired by [Flask](http://flask.pocoo.org/) and [web.go](https://github.com/hoisie/web) and written in Go.

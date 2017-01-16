@@ -16,7 +16,7 @@ func init() {
 
 func loadTemplate(filename string) *template.Template {
 	// load the template file
-	file, err := readFile("templates/" + filename)
+	file, _ := readFile("templates/" + filename)
 	t := template.New(filename)
 	t.Funcs(template.FuncMap{
 		"mod": func(i, j int) int { return i % j },
@@ -30,7 +30,7 @@ func loadTemplate(filename string) *template.Template {
 		"sub": func(a, b int) int { return a - b },
 		"div": func(a, b int) int { return a / b },
 	})
-	t, err = t.Parse(string(file))
+	t, err := t.Parse(string(file))
 	if err != nil {
 		fmt.Println(err)
 	}

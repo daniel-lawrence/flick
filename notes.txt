@@ -1,0 +1,7 @@
+# Manifesto
+* Files that don't change at runtime should be stored in memory.
+* Files that do change during runtime should be stored in memory, but changes should be written to disk consistently and all at once (unexpected shutdowns should, at most, cause loss of changes over the last second)
+* Files should be completely handled by flick by default.
+* Defaults should be useful for the vast majority of cases.
+* Defaults should be easily overridden.
+* A package using flick should be able to control the server on a high level.

@@ -13,6 +13,7 @@ import (
 type Context struct {
 	Wr  http.ResponseWriter
 	Req *http.Request
+	Queries map[string][]string
 }
 
 func (c *Context) Write(data []byte) {
@@ -43,7 +44,7 @@ func Get(pattern string, handler func(c *Context)) {
 	http.HandleFunc(pattern,
 		func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
-			handler(&Context{w, r})
+			handler(&Context{w, r, r.URL.Query()})
 			elapsed := time.Since(start)
 			log.Printf("%s %s: %s", r.Proto, pattern, elapsed)
 		})

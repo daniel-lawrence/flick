@@ -29,6 +29,8 @@ func loadTemplate(filename string) *template.Template {
 		},
 		"sub": func(a, b int) int { return a - b },
 		"div": func(a, b int) int { return a / b },
+		"add": func(a, b int) int { return a + b },
+		"mul": func(a, b int) int { return a * b },
 	})
 	t, err = t.Parse(string(file))
 	if err != nil {

@@ -4,14 +4,19 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 )
 
 // keep all the parsetrees we need pre-loaded
 var templates map[string]*template.Template
 
+// keep static resources cached too when they are used explicitly
+var staticCached map[string]*[]byte
+
 func init() {
 	templates = make(map[string]*template.Template)
+	staticCached = make(map[string]*[]byte)
 }
 
 func loadTemplate(filename string) *template.Template {
@@ -27,11 +32,14 @@ func loadTemplate(filename string) *template.Template {
 			}
 			return loop
 		},
+		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
 		"div": func(a, b int) int { return a / b },
+		"mul": func(a, b int) int { return a * b },
 	})
 	t, err := t.Parse(string(file))
 	if err != nil {
+		fmt.Println("Warning: template parsing error! May not be injection safe!")
 		fmt.Println(err)
 	}
 	templates[filename] = t
@@ -57,4 +65,25 @@ func RenderTemplate(filename string, data interface{}) []byte {
 // PageData returns a map[string]string which can be used to pass data to templates
 func PageData() map[string]interface{} {
 	return make(map[string]interface{})
+}
+
+// RenderStatic renders a static file, and returns its data
+func RenderStatic(filename string, cache bool) []byte {
+	if cache {
+		_, ok := staticCached[filename]
+		if ok {
+			return *staticCached[filename]
+		}
+	}
+	path := "static/" + filename
+	// get contents of file
+	contents, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Printf("Error serving %s: %v", path, err)
+		return nil
+	}
+	if cache {
+		staticCached[filename] = &contents
+	}
+	return contents
 }

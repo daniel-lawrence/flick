@@ -15,6 +15,7 @@ import (
 type Context struct {
 	Wr  http.ResponseWriter
 	Req *http.Request
+	Queries map[string][]string
 }
 
 func (c *Context) Write(data []byte) {
@@ -52,7 +53,7 @@ func Get(pattern string, handler func(c *Context)) {
 				methodName := runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
 				log.Printf("Warning: GET handler for function %s got non-GET method type", methodName)
 			}
-			handler(&Context{w, r})
+			handler(&Context{w, r, r.URL.Query()})
 			elapsed := time.Since(start)
 			log.Printf("%s %s: %s", r.Proto, pattern, elapsed)
 		})

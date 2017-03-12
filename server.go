@@ -9,12 +9,14 @@ import (
 	"reflect"
 	"runtime"
 	"time"
+
+	"github.com/kabukky/httpscerts"
 )
 
 // Context is an extended version of ReponseWriter
 type Context struct {
-	Wr  http.ResponseWriter
-	Req *http.Request
+	Wr      http.ResponseWriter
+	Req     *http.Request
 	Queries map[string][]string
 }
 
@@ -26,18 +28,32 @@ func (c *Context) Write(data []byte) {
 
 // Serve starts the webserver
 func Serve(addr string) {
-	// add handlers for static files automatically
-	files, err := ioutil.ReadDir("./static/")
-	if err != nil {
-		log.Print(err)
-	}
-	fmt.Print("Adding static files:\n")
-	for _, f := range files {
-		fmt.Println(f.Name())
-		serveStaticFile(f.Name(), f.ModTime())
-	}
+	PrepareStatics()
 	log.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+// ServeTLS uses a supplied certfile and keyfile to serve HTTPS
+func ServeTLS(addr, certfile, keyfile string) {
+	PrepareStatics()
+	log.Printf("Serving on %s\n", addr)
+	log.Fatal(http.ListenAndServeTLS(addr, certfile, keyfile, nil))
+}
+
+// ServeTLSSelfSign auto-generates a self-signed certificate. For testing purposes only.
+func ServeTLSSelfSign(addr string) {
+	err := httpscerts.Check("cert.pem", "key.pem")
+	//If they are not available, generate new ones.
+	if err != nil {
+		err := httpscerts.Generate("cert.pem", "key.pem", addr)
+		if err != nil {
+			log.Fatal("Error: Couldn't create https certs.")
+		}
+	}
+
+	PrepareStatics()
+	log.Printf("Serving on %s\n", addr)
+	log.Fatal(http.ListenAndServeTLS(addr, "cert.pem", "key.pem", nil))
 }
 
 // Get takes a pattern string and a function(*http.Request)
@@ -58,6 +74,18 @@ func Get(pattern string, handler func(c *Context)) {
 			log.Printf("%s %s: %s", r.Proto, pattern, elapsed)
 		})
 
+}
+
+func PrepareStatics() {
+	files, err := ioutil.ReadDir("./static/")
+	if err != nil {
+		log.Print(err)
+	}
+	fmt.Print("Adding static files:\n")
+	for _, f := range files {
+		fmt.Println(f.Name())
+		serveStaticFile(f.Name(), f.ModTime())
+	}
 }
 
 func serveStaticFile(filename string, modtime time.Time) {

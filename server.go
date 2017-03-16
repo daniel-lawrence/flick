@@ -3,6 +3,7 @@ package flick
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -28,14 +29,21 @@ func (c *Context) Write(data []byte) {
 
 // Serve starts the webserver
 func Serve(addr string) {
-	PrepareStatics()
+	prepareStatics(false)
+	log.Printf("Serving on %s\n", addr)
+	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+// ServeLive starts the webserver, and reloads static files on each request
+func ServeLive(addr string) {
+	prepareStatics(true)
 	log.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
 // ServeTLS uses a supplied certfile and keyfile to serve HTTPS
 func ServeTLS(addr, certfile, keyfile string) {
-	PrepareStatics()
+	prepareStatics(false)
 	log.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, certfile, keyfile, nil))
 }
@@ -51,7 +59,7 @@ func ServeTLSSelfSign(addr string) {
 		}
 	}
 
-	PrepareStatics()
+	prepareStatics(false)
 	log.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, "cert.pem", "key.pem", nil))
 }
@@ -76,7 +84,7 @@ func Get(pattern string, handler func(c *Context)) {
 
 }
 
-func PrepareStatics() {
+func prepareStatics(hotload bool) {
 	files, err := ioutil.ReadDir("./static/")
 	if err != nil {
 		log.Print(err)
@@ -84,21 +92,45 @@ func PrepareStatics() {
 	fmt.Print("Adding static files:\n")
 	for _, f := range files {
 		fmt.Println(f.Name())
-		serveStaticFile(f.Name(), f.ModTime())
+		if hotload {
+			serveLiveUpdating(f.Name())
+		} else {
+			serveStaticFile(f.Name(), f.ModTime())
+		}
 	}
 }
 
-func serveStaticFile(filename string, modtime time.Time) {
+func readStaticFile(filename string) (io.ReadSeeker, error) {
 	path := "static/" + filename
 	// get contents of file
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Printf("Error serving %s: %v", path, err)
-		return
+		return nil, err
 	}
 	contentsReader := bytes.NewReader(contents)
+	return contentsReader, nil
+}
+
+func serveStaticFile(filename string, modtime time.Time) {
+	contentsReader, err := readStaticFile(filename)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	Get("/"+filename,
 		func(c *Context) {
 			http.ServeContent(c.Wr, c.Req, filename, modtime, contentsReader)
+		})
+}
+
+func serveLiveUpdating(filename string) {
+	Get("/"+filename,
+		func(c *Context) {
+			contentsReader, err := readStaticFile(filename)
+			if err != nil {
+				http.NotFound(c.Wr, c.Req)
+				return
+			}
+			http.ServeContent(c.Wr, c.Req, filename, time.Now(), contentsReader)
 		})
 }

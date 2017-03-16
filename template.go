@@ -36,6 +36,9 @@ func loadTemplate(filename string) *template.Template {
 		"sub": func(a, b int) int { return a - b },
 		"div": func(a, b int) int { return a / b },
 		"mul": func(a, b int) int { return a * b },
+		"inlinecss": func(filename string) template.CSS {
+			return template.CSS(RenderStatic(filename, true))
+		},
 	})
 	t, err := t.Parse(string(file))
 	if err != nil {

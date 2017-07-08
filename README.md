@@ -16,10 +16,10 @@ Extremely simple server framework inspired by [Flask](http://flask.pocoo.org/) a
 package main
 import f "github.com/olafal0/flick"
 func main() {
-	f.Get("/", func(c *f.Context) {
-		c.Write([]byte("Hello, world!"))
-	})
-	f.Serve(":5000")
+    f.Get("/", func(c *f.Context) {
+        c.WriteString("Hello, world!")
+    })
+    f.Serve(":5000")
 }
 ```
 See the example directory for a more complete example.

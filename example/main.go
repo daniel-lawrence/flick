@@ -32,7 +32,8 @@ func rootHandler(c *f.Context) {
 	}
 	// make the data to pass to the template
 	// this could easily be replaced with simply passing time.Now() to the renderer,
-	// but this is an example of something that could be extended
+	// but this is an example of something that could be extended.
+	// In the template, you can just use {{.ServerTime}} to print the value
 	data := struct {
 		ServerTime time.Time
 	}{

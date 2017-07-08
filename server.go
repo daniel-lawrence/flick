@@ -26,6 +26,12 @@ func (c *Context) Write(data []byte) {
 	http.ServeContent(c.Wr, c.Req, name, time.Now(), reader)
 }
 
+func (c *Context) WriteString(data string) {
+	reader := bytes.NewReader([]byte(data))
+	name := c.Req.RequestURI
+	http.ServeContent(c.Wr, c.Req, name, time.Now(), reader)
+}
+
 // Serve starts the webserver
 func Serve(addr string) {
 	prepareStatics(false)

@@ -50,7 +50,7 @@ func loadTemplate(filename string) *template.Template {
 }
 
 // RenderTemplate creates the template (if it doesn't exist yet) or loads it (if it does),
-// renders the template, and returns the data as []byte
+// renders the template, and returns the data as []byte.
 func RenderTemplate(filename string, data interface{}) []byte {
 	var buf bytes.Buffer
 	_, ok := templates[filename]
@@ -65,12 +65,12 @@ func RenderTemplate(filename string, data interface{}) []byte {
 	return buf.Bytes()
 }
 
-// PageData returns a map[string]string which can be used to pass data to templates
+// PageData returns a map[string]string which can be used to pass data to templates.
 func PageData() map[string]interface{} {
 	return make(map[string]interface{})
 }
 
-// RenderStatic renders a static file, and returns its data
+// RenderStatic renders a static file and returns its data.
 func RenderStatic(filename string, cache bool) []byte {
 	if cache {
 		_, ok := staticCached[filename]

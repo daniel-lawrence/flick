@@ -1,16 +1,17 @@
 package flick
 
 import (
-	"golang.org/x/net/websocket"
 	"log"
 	"net/http"
 	"reflect"
 	"runtime"
 	"time"
+
+	"golang.org/x/net/websocket"
 )
 
 // Get takes a pattern string and a function(*Context)
-// and adds it to the DefaultServeMux
+// and adds it to the DefaultServeMux.
 func Get(pattern string, handler func(c *Context)) {
 
 	http.HandleFunc(pattern,
@@ -30,8 +31,29 @@ func Get(pattern string, handler func(c *Context)) {
 
 }
 
+// Post takes a pattern string and a function(*Context)
+// and adds it to the DefaultServeMux.
+func Post(pattern string, handler func(c *Context)) {
+
+	http.HandleFunc(pattern,
+		func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			// make sure this is actually supposed to be a POST request
+			if r.Method != "" && r.Method != "POST" {
+				// use reflection to get the name of the handler method
+				methodName := runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
+				log.Printf("Warning: POST handler for function %s got non-POST method type", methodName)
+			}
+			c := Context{w, r, r.URL.Query()}
+			handler(&c)
+			elapsed := time.Since(start)
+			log.Printf("%s %s: %s", r.Proto, pattern, elapsed)
+		})
+
+}
+
 // WebSocketConnect takes a pattern string and a function(*websocket.Conn)
-// that should handle a websocket connection
+// that should handle a websocket connection.
 func WebSocketConnect(pattern string, handler func(ws *websocket.Conn)) {
 	http.Handle(pattern, websocket.Handler(
 		func(ws *websocket.Conn) {

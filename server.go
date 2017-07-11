@@ -32,6 +32,19 @@ func (c *Context) WriteString(data string) {
 	http.ServeContent(c.Wr, c.Req, name, time.Now(), reader)
 }
 
+func redirectToHttps(addr string) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		url := r.URL
+		url.Host = r.Host
+		url.Scheme = "https"
+		url.Host = url.Hostname() // remove any port numbers
+		log.Printf("Redirecting to %v\n", url.String())
+		http.Redirect(w, r, url.String(), http.StatusMovedPermanently)
+	})
+	go http.ListenAndServe(addr, mux)
+}
+
 // Serve starts the webserver with the given address.
 func Serve(addr string) {
 	prepareStatics(false)
@@ -46,15 +59,18 @@ func ServeLive(addr string) {
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
-// ServeTLS uses a supplied certfile and keyfile to serve over HTTPS.
-func ServeTLS(addr, certfile, keyfile string) {
+// ServeTLS uses a supplied certfile and keyfile to serve over HTTPS. If a redirect address is supplied,
+// any requests to redirectAddress will be redirected to addr using HTTPS (for example, if redirectAddress is ":80"
+// and addr is ":443", HTTP requests will be redirected to HTTPS).
+func ServeTLS(addr, certfile, keyfile, redirectAddress string) {
 	prepareStatics(false)
+	redirectToHttps(redirectAddress)
 	log.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, certfile, keyfile, nil))
 }
 
 // ServeTLSSelfSign auto-generates a self-signed certificate. For testing purposes only.
-func ServeTLSSelfSign(addr string) {
+func ServeTLSSelfSign(addr string, redirectAddress string) {
 	err := httpscerts.Check("cert.pem", "key.pem")
 	//If they are not available, generate new ones.
 	if err != nil {
@@ -65,6 +81,7 @@ func ServeTLSSelfSign(addr string) {
 	}
 
 	prepareStatics(false)
+	redirectToHttps(redirectAddress)
 	log.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, "cert.pem", "key.pem", nil))
 }

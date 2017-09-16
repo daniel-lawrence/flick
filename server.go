@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/kabukky/httpscerts"
@@ -20,26 +21,37 @@ type Context struct {
 	Queries map[string][]string
 }
 
+// Write writes the given bytes to the reponse. This should only be called once
+// per response.
 func (c *Context) Write(data []byte) {
 	reader := bytes.NewReader(data)
 	name := c.Req.RequestURI
 	http.ServeContent(c.Wr, c.Req, name, time.Now(), reader)
 }
 
+// WriteString writes the given string to the response. This should only be
+// called once per response.
 func (c *Context) WriteString(data string) {
 	reader := bytes.NewReader([]byte(data))
 	name := c.Req.RequestURI
 	http.ServeContent(c.Wr, c.Req, name, time.Now(), reader)
 }
 
-func redirectToHttps(addr string) {
+func redirectToHTTPS(addr string, httpsAddr string) {
+	if addr == "" {
+		return
+	}
+
+	// get the host part of httpsAddr (probably the whole thing)
+	httpsPort := httpsAddr[strings.Index(httpsAddr, ":"):]
 	mux := http.NewServeMux()
+	log.Printf("Will redirect any requests from %s to %s\n", addr, httpsPort)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		url := r.URL
-		url.Host = r.Host
+		url := *r.URL
 		url.Scheme = "https"
-		url.Host = url.Hostname() // remove any port numbers
-		log.Printf("Redirecting to %v\n", url.String())
+		url.Host = r.Host
+		url.Host = url.Hostname() + ":5001"
+		log.Printf("Redirecting %v to %s\n", r.Host, url.String())
 		http.Redirect(w, r, url.String(), http.StatusMovedPermanently)
 	})
 	go http.ListenAndServe(addr, mux)
@@ -64,7 +76,7 @@ func ServeLive(addr string) {
 // and addr is ":443", HTTP requests will be redirected to HTTPS).
 func ServeTLS(addr, certfile, keyfile, redirectAddress string) {
 	prepareStatics(false)
-	redirectToHttps(redirectAddress)
+	redirectToHTTPS(redirectAddress, addr)
 	log.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, certfile, keyfile, nil))
 }
@@ -80,8 +92,8 @@ func ServeTLSSelfSign(addr string, redirectAddress string) {
 		}
 	}
 
-	prepareStatics(false)
-	redirectToHttps(redirectAddress)
+	prepareStatics(true)
+	redirectToHTTPS(redirectAddress, addr)
 	log.Printf("Serving on %s\n", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, "cert.pem", "key.pem", nil))
 }

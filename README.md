@@ -6,7 +6,7 @@ Extremely simple server framework inspired by [Flask](http://flask.pocoo.org/) a
 * HTTP and HTTPS serving with just `f.Serve(":80")`
 * Easily define and bind handler functions with `f.Get("/route",handler)`
 * Cached template rendering, even with changing data
-* Auto-generate and use self-signed TLS with 0 additional lines of code: `f.ServeTLSSelfSign(":80")`
+* Easily auto-generate and use self-signed TLS: `f.ServeTLSSelfSign(":443", ":80")`
 * Use websockets as just another handler function
 * Automatic request logging and timing
 * Additional template functions built-in, including CSS inlining

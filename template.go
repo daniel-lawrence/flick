@@ -23,6 +23,7 @@ func loadTemplate(filename string) *template.Template {
 	// load the template file
 	file, _ := readFile("templates/" + filename)
 	t := template.New(filename)
+	// add some useful functionality
 	t.Funcs(template.FuncMap{
 		"mod": func(i, j int) int { return i % j },
 		"loop": func(n int) []int {
@@ -63,11 +64,6 @@ func RenderTemplate(filename string, data interface{}) []byte {
 		log.Println(err)
 	}
 	return buf.Bytes()
-}
-
-// PageData returns a map[string]string which can be used to pass data to templates.
-func PageData() map[string]interface{} {
-	return make(map[string]interface{})
 }
 
 // RenderStatic renders a static file and returns its data.

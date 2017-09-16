@@ -19,13 +19,18 @@ func main() {
 	// this will generate security warnings in browsers, though
 	// (it's also bad in general - only use it for testing.
 	//  ServeTLS() is what you really want)
-	f.ServeTLSSelfSign(":5001")
+	f.ServeTLSSelfSign(":5001", "")
 	// visit http://localhost:5000 or https://localhost:5001
+
+	// if you wanted to automatically redirect HTTP on :5000 to HTTPS on :5001,
+	// you could just do this:
+	// f.ServeTLSSelfSign(":5001", ":5000")
 }
 
 // A handler just takes a context. Use f.Context.Write([]byte) for your response.
 func rootHandler(c *f.Context) {
-	// 404 if it isn't the correct path
+	// 404 if it isn't the correct path. Because of the way Go's serve mux works
+	// by default, "/" acts as a catch-all for any path that doesn't exist.
 	if c.Req.URL.Path != "/" {
 		http.NotFound(c.Wr, c.Req)
 		return
@@ -34,12 +39,11 @@ func rootHandler(c *f.Context) {
 	// this could easily be replaced with simply passing time.Now() to the renderer,
 	// but this is an example of something that could be extended.
 	// In the template, you can just use {{.ServerTime}} to print the value
-	data := struct {
-		ServerTime time.Time
-	}{
-		time.Now(),
-	}
-	// write the rendered template
+	data := make(map[string]interface{})
+	data["ServerTime"] = time.Now()
+	// data could also be a struct with a field called ServerTime.
+
+	// Write the rendered template.
 	// The first time this handler is called, this will take maybe 10ms.
 	// Most of that is overhead from reading the file.
 	// After that, the template is cached - calling the function again, even

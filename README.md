@@ -1,5 +1,7 @@
 # flick
 
+[![](https://img.shields.io/badge/godoc-reference-5272B4.svg)](https://godoc.org/github.com/olafal0/flick)
+
 Extremely simple server framework inspired by [Flask](http://flask.pocoo.org/) and [web.go](https://github.com/hoisie/web) and written in Go.
 
 # Features
@@ -23,4 +25,3 @@ func main() {
 }
 ```
 See the example directory for a more complete example.
-Godoc is [available here](godoc.org/github.com/olafal0/flick).

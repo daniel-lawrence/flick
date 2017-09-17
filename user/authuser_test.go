@@ -7,7 +7,7 @@ import (
 func TestNewUser(t *testing.T) {
 	SetHashCost(10)
 
-	u := AuthUser{Email: "123@123.com"}
+	u := AuthUser{}
 	err := u.SetPassword("clowndentists")
 	if err != nil {
 		t.Error("Could not set password")
@@ -24,10 +24,11 @@ func TestNewUser(t *testing.T) {
 
 func TestNewExtendedUser(t *testing.T) {
 	SetHashCost(10)
-	
+
 	type ExtendedUser struct {
 		AuthUser
-		Name string
+		Name  string
+		Email string
 	}
 	eu := ExtendedUser{Name: "Todd Chavez"}
 	eu.Email = "its.todd.its.me@yahoo.com"
@@ -46,7 +47,7 @@ func TestNewExtendedUser(t *testing.T) {
 }
 
 func BenchmarkSetPassword(b *testing.B) {
-	u := AuthUser{Email: "123@123.com"}
+	u := AuthUser{}
 	for n := 0; n < b.N; n++ {
 		u.SetPassword("password" + string(n))
 	}

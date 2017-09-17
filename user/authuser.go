@@ -8,8 +8,7 @@ var bcryptCost = 12
 
 // AuthUser represents a user that includes authentication functionality.
 type AuthUser struct {
-	Email          string `json:"email,omitempty"`
-	hashedPassword []byte
+	HashedPassword []byte
 }
 
 // SetPassword hashes and stores the password for a user, overwriting the
@@ -19,14 +18,14 @@ func (u *AuthUser) SetPassword(newPassword string) error {
 	if err != nil {
 		return err
 	}
-	u.hashedPassword = hashed
+	u.HashedPassword = hashed
 	return nil
 }
 
 // Authenticate takes a password and returns true if the user should be logged
 // in, false otherwise.
 func (u *AuthUser) Authenticate(password string) bool {
-	result := bcrypt.CompareHashAndPassword(u.hashedPassword, []byte(password))
+	result := bcrypt.CompareHashAndPassword(u.HashedPassword, []byte(password))
 	if result == nil {
 		return true
 	}

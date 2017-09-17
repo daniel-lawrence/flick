@@ -14,7 +14,7 @@ Extremely simple server framework inspired by [Flask](http://flask.pocoo.org/) a
 * Additional template functions built-in, including CSS inlining
 
 # Usage
-```
+```go
 package main
 import f "github.com/olafal0/flick"
 func main() {
